@@ -1,0 +1,1472 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <meta name="theme-color" content="#0a0f1e">
+  <meta name="description" content="IHK AP1 Prüfungsvorbereitung – Anti-Vergessen-System">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="AVS">
+  <title>AVS – Anti-Vergessen-System</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    /* ── DESIGN SYSTEM ─────────────────────────────────────────────────────
+       Aesthetic: Dark Terminal + Neon Cyan Accents
+       Inspired by: Cyberpunk UI, Developer Tools, IHK-Prüfungsatmosphäre
+    ──────────────────────────────────────────────────────────────────────── */
+    :root {
+      --bg-deep:     #060b18;
+      --bg-card:     #0d1526;
+      --bg-surface:  #111d35;
+      --bg-hover:    #162040;
+      --cyan:        #00d4ff;
+      --cyan-dim:    #00a8cc;
+      --cyan-glow:   rgba(0,212,255,0.15);
+      --green:       #00ff88;
+      --green-dim:   #00cc6a;
+      --amber:       #ffb800;
+      --red:         #ff4466;
+      --text-primary:#e8f0fe;
+      --text-secondary:#7a9cc8;
+      --text-muted:  #3d5a80;
+      --border:      rgba(0,212,255,0.12);
+      --border-bright: rgba(0,212,255,0.35);
+      --radius:      12px;
+      --radius-lg:   20px;
+      --font-sans:   'Space Grotesk', system-ui, sans-serif;
+      --font-mono:   'JetBrains Mono', monospace;
+      --ease-out:    cubic-bezier(0.23, 1, 0.32, 1);
+      --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body {
+      height: 100%;
+      background: var(--bg-deep);
+      color: var(--text-primary);
+      font-family: var(--font-sans);
+      font-size: 16px;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      overflow: hidden;
+    }
+
+    /* ── APP SHELL ──────────────────────────────────────────────────────── */
+    #app {
+      display: flex;
+      flex-direction: column;
+      height: 100dvh;
+      max-width: 480px;
+      margin: 0 auto;
+      position: relative;
+    }
+
+    /* ── HEADER ─────────────────────────────────────────────────────────── */
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 20px 12px;
+      background: linear-gradient(180deg, var(--bg-deep) 0%, transparent 100%);
+      position: relative;
+      z-index: 10;
+      flex-shrink: 0;
+    }
+
+    .header-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .logo-icon {
+      width: 36px;
+      height: 36px;
+      background: linear-gradient(135deg, var(--cyan), #0066ff);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      box-shadow: 0 0 20px rgba(0,212,255,0.3);
+    }
+
+    .logo-text {
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      color: var(--text-primary);
+    }
+
+    .logo-text span {
+      color: var(--cyan);
+    }
+
+    .streak-badge {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(255,184,0,0.1);
+      border: 1px solid rgba(255,184,0,0.25);
+      border-radius: 20px;
+      padding: 6px 12px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--amber);
+    }
+
+    /* ── NAVIGATION TABS ────────────────────────────────────────────────── */
+    .nav-tabs {
+      display: flex;
+      gap: 4px;
+      padding: 0 20px 12px;
+      flex-shrink: 0;
+    }
+
+    .nav-tab {
+      flex: 1;
+      padding: 8px 4px;
+      border: none;
+      border-radius: 8px;
+      background: transparent;
+      color: var(--text-muted);
+      font-family: var(--font-sans);
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 200ms var(--ease-out);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+    }
+
+    .nav-tab .tab-icon { font-size: 18px; }
+
+    .nav-tab.active {
+      background: var(--cyan-glow);
+      color: var(--cyan);
+      border: 1px solid var(--border-bright);
+    }
+
+    .nav-tab:active { transform: scale(0.95); }
+
+    /* ── SCREEN CONTAINER ───────────────────────────────────────────────── */
+    .screens {
+      flex: 1;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .screen {
+      position: absolute;
+      inset: 0;
+      overflow-y: auto;
+      padding: 0 20px 100px;
+      opacity: 0;
+      transform: translateY(12px);
+      pointer-events: none;
+      transition: all 280ms var(--ease-out);
+      scrollbar-width: thin;
+      scrollbar-color: var(--border) transparent;
+    }
+
+    .screen.active {
+      opacity: 1;
+      transform: translateY(0);
+      pointer-events: all;
+    }
+
+    /* ── CARDS ──────────────────────────────────────────────────────────── */
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 20px;
+      margin-bottom: 16px;
+      transition: border-color 200ms;
+    }
+
+    .card:hover { border-color: var(--border-bright); }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+
+    .card-label {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
+
+    .card-label.cyan { color: var(--cyan); }
+    .card-label.green { color: var(--green); }
+    .card-label.amber { color: var(--amber); }
+
+    /* ── QUESTION CARD ──────────────────────────────────────────────────── */
+    .question-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-bright);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      margin-bottom: 16px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .question-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, var(--cyan), #0066ff, transparent);
+    }
+
+    .question-meta {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+    }
+
+    .tag {
+      font-size: 11px;
+      font-weight: 600;
+      padding: 3px 10px;
+      border-radius: 20px;
+      letter-spacing: 0.5px;
+    }
+
+    .tag-category {
+      background: rgba(0,212,255,0.1);
+      color: var(--cyan);
+      border: 1px solid rgba(0,212,255,0.2);
+    }
+
+    .tag-difficulty-leicht {
+      background: rgba(0,255,136,0.1);
+      color: var(--green);
+      border: 1px solid rgba(0,255,136,0.2);
+    }
+
+    .tag-difficulty-mittel {
+      background: rgba(255,184,0,0.1);
+      color: var(--amber);
+      border: 1px solid rgba(255,184,0,0.2);
+    }
+
+    .tag-difficulty-schwer {
+      background: rgba(255,68,102,0.1);
+      color: var(--red);
+      border: 1px solid rgba(255,68,102,0.2);
+    }
+
+    .question-text {
+      font-size: 16px;
+      font-weight: 500;
+      line-height: 1.65;
+      color: var(--text-primary);
+      margin-bottom: 20px;
+    }
+
+    .hint-box {
+      background: rgba(0,212,255,0.05);
+      border: 1px solid rgba(0,212,255,0.15);
+      border-radius: 8px;
+      padding: 10px 14px;
+      margin-bottom: 16px;
+      font-size: 13px;
+      color: var(--text-secondary);
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+    }
+
+    .hint-box .hint-icon { flex-shrink: 0; color: var(--cyan); }
+
+    /* ── ANSWER SECTION ─────────────────────────────────────────────────── */
+    .answer-section {
+      overflow: hidden;
+      max-height: 0;
+      transition: max-height 400ms var(--ease-out), opacity 300ms;
+      opacity: 0;
+    }
+
+    .answer-section.revealed {
+      max-height: 800px;
+      opacity: 1;
+    }
+
+    .answer-short {
+      background: rgba(0,255,136,0.06);
+      border: 1px solid rgba(0,255,136,0.2);
+      border-radius: 10px;
+      padding: 14px 16px;
+      margin-bottom: 12px;
+    }
+
+    .answer-short-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--green);
+      margin-bottom: 6px;
+    }
+
+    .answer-short-text {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text-primary);
+      line-height: 1.5;
+    }
+
+    .answer-long {
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px 16px;
+      margin-bottom: 16px;
+    }
+
+    .answer-long-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+    }
+
+    .answer-long-text {
+      font-size: 13px;
+      color: var(--text-secondary);
+      line-height: 1.7;
+      white-space: pre-line;
+      font-family: var(--font-mono);
+    }
+
+    /* ── BUTTONS ────────────────────────────────────────────────────────── */
+    .btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      width: 100%;
+      padding: 14px 20px;
+      border: none;
+      border-radius: var(--radius);
+      font-family: var(--font-sans);
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 160ms var(--ease-out);
+      letter-spacing: 0.3px;
+    }
+
+    .btn:active { transform: scale(0.97); }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--cyan), #0066ff);
+      color: #fff;
+      box-shadow: 0 4px 20px rgba(0,212,255,0.25);
+    }
+
+    .btn-primary:hover {
+      box-shadow: 0 6px 28px rgba(0,212,255,0.4);
+      transform: translateY(-1px);
+    }
+
+    .btn-ghost {
+      background: transparent;
+      color: var(--text-secondary);
+      border: 1px solid var(--border);
+    }
+
+    .btn-ghost:hover {
+      background: var(--bg-hover);
+      color: var(--text-primary);
+      border-color: var(--border-bright);
+    }
+
+    .btn-success {
+      background: rgba(0,255,136,0.1);
+      color: var(--green);
+      border: 1px solid rgba(0,255,136,0.3);
+    }
+
+    .btn-danger {
+      background: rgba(255,68,102,0.1);
+      color: var(--red);
+      border: 1px solid rgba(255,68,102,0.3);
+    }
+
+    .btn-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    /* ── PROGRESS BAR ───────────────────────────────────────────────────── */
+    .progress-ring-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px 0;
+    }
+
+    .progress-ring {
+      position: relative;
+      width: 120px;
+      height: 120px;
+    }
+
+    .progress-ring svg {
+      transform: rotate(-90deg);
+    }
+
+    .progress-ring-bg {
+      fill: none;
+      stroke: var(--bg-surface);
+      stroke-width: 8;
+    }
+
+    .progress-ring-fill {
+      fill: none;
+      stroke: url(#progressGrad);
+      stroke-width: 8;
+      stroke-linecap: round;
+      transition: stroke-dashoffset 600ms var(--ease-out);
+    }
+
+    .progress-ring-text {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .progress-pct {
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--cyan);
+      font-family: var(--font-mono);
+      line-height: 1;
+    }
+
+    .progress-label {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    /* ── STATS GRID ─────────────────────────────────────────────────────── */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    .stat-item {
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px 10px;
+      text-align: center;
+    }
+
+    .stat-value {
+      font-size: 22px;
+      font-weight: 700;
+      font-family: var(--font-mono);
+      color: var(--cyan);
+      line-height: 1;
+    }
+
+    .stat-label {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    /* ── QUESTION LIST ──────────────────────────────────────────────────── */
+    .question-list-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 14px 16px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      margin-bottom: 8px;
+      cursor: pointer;
+      transition: all 180ms var(--ease-out);
+    }
+
+    .question-list-item:hover {
+      border-color: var(--border-bright);
+      background: var(--bg-hover);
+      transform: translateX(3px);
+    }
+
+    .question-list-item:active { transform: scale(0.98); }
+
+    .qli-status {
+      width: 28px;
+      height: 28px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    .qli-status.correct { background: rgba(0,255,136,0.15); }
+    .qli-status.wrong { background: rgba(255,68,102,0.15); }
+    .qli-status.unseen { background: var(--bg-surface); border: 1px solid var(--border); }
+
+    .qli-content { flex: 1; min-width: 0; }
+
+    .qli-topic {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--cyan);
+      margin-bottom: 3px;
+    }
+
+    .qli-question {
+      font-size: 13px;
+      color: var(--text-secondary);
+      line-height: 1.4;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    /* ── CATEGORY FILTER ────────────────────────────────────────────────── */
+    .category-filter {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 16px;
+      overflow-x: auto;
+      padding-bottom: 4px;
+      scrollbar-width: none;
+    }
+
+    .category-filter::-webkit-scrollbar { display: none; }
+
+    .filter-chip {
+      flex-shrink: 0;
+      padding: 6px 14px;
+      border-radius: 20px;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--text-muted);
+      font-family: var(--font-sans);
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 160ms;
+    }
+
+    .filter-chip.active {
+      background: var(--cyan-glow);
+      color: var(--cyan);
+      border-color: var(--border-bright);
+    }
+
+    .filter-chip:active { transform: scale(0.95); }
+
+    /* ── SECTION TITLE ──────────────────────────────────────────────────── */
+    .section-title {
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin: 20px 0 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .section-title::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    /* ── TODAY SCREEN ───────────────────────────────────────────────────── */
+    .today-header {
+      padding: 8px 0 20px;
+    }
+
+    .today-greeting {
+      font-size: 13px;
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+      margin-bottom: 4px;
+    }
+
+    .today-title {
+      font-size: 26px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      color: var(--text-primary);
+    }
+
+    .today-title span { color: var(--cyan); }
+
+    .day-counter {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(0,212,255,0.08);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 8px 14px;
+      margin-top: 12px;
+      font-size: 13px;
+      color: var(--text-secondary);
+    }
+
+    .day-counter strong { color: var(--cyan); font-family: var(--font-mono); }
+
+    /* ── INSTALL BANNER ─────────────────────────────────────────────────── */
+    .install-banner {
+      background: linear-gradient(135deg, rgba(0,212,255,0.08), rgba(0,102,255,0.08));
+      border: 1px solid var(--border-bright);
+      border-radius: var(--radius);
+      padding: 14px 16px;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .install-banner-text { flex: 1; font-size: 13px; color: var(--text-secondary); }
+    .install-banner-text strong { color: var(--text-primary); display: block; margin-bottom: 2px; }
+
+    .install-btn {
+      flex-shrink: 0;
+      padding: 8px 14px;
+      background: var(--cyan);
+      color: var(--bg-deep);
+      border: none;
+      border-radius: 8px;
+      font-family: var(--font-sans);
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 160ms;
+    }
+
+    .install-btn:active { transform: scale(0.95); }
+
+    /* ── PROGRESS SCREEN ────────────────────────────────────────────────── */
+    .category-progress-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .category-progress-item:last-child { border-bottom: none; }
+
+    .cpi-name {
+      width: 130px;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      flex-shrink: 0;
+    }
+
+    .cpi-bar {
+      flex: 1;
+      height: 6px;
+      background: var(--bg-surface);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+
+    .cpi-bar-fill {
+      height: 100%;
+      border-radius: 3px;
+      background: linear-gradient(90deg, var(--cyan), #0066ff);
+      transition: width 600ms var(--ease-out);
+    }
+
+    .cpi-count {
+      font-size: 12px;
+      font-family: var(--font-mono);
+      color: var(--text-muted);
+      width: 40px;
+      text-align: right;
+      flex-shrink: 0;
+    }
+
+    /* ── TIPS SCREEN ────────────────────────────────────────────────────── */
+    .tip-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px;
+      margin-bottom: 10px;
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+    }
+
+    .tip-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      flex-shrink: 0;
+      background: var(--bg-surface);
+    }
+
+    .tip-content { flex: 1; }
+    .tip-title { font-size: 14px; font-weight: 600; color: var(--text-primary); margin-bottom: 4px; }
+    .tip-text { font-size: 13px; color: var(--text-secondary); line-height: 1.5; }
+
+    /* ── MODAL OVERLAY ──────────────────────────────────────────────────── */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(6,11,24,0.92);
+      backdrop-filter: blur(8px);
+      z-index: 100;
+      display: flex;
+      align-items: flex-end;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 280ms;
+    }
+
+    .modal-overlay.open {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    .modal-sheet {
+      width: 100%;
+      max-width: 480px;
+      margin: 0 auto;
+      background: var(--bg-card);
+      border: 1px solid var(--border-bright);
+      border-bottom: none;
+      border-radius: 24px 24px 0 0;
+      padding: 20px 20px 40px;
+      transform: translateY(100%);
+      transition: transform 320ms var(--ease-spring);
+    }
+
+    .modal-overlay.open .modal-sheet {
+      transform: translateY(0);
+    }
+
+    .modal-handle {
+      width: 40px;
+      height: 4px;
+      background: var(--border);
+      border-radius: 2px;
+      margin: 0 auto 20px;
+    }
+
+    /* ── TOAST ──────────────────────────────────────────────────────────── */
+    .toast {
+      position: fixed;
+      bottom: 90px;
+      left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: var(--bg-surface);
+      border: 1px solid var(--border-bright);
+      border-radius: 24px;
+      padding: 10px 20px;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-primary);
+      z-index: 200;
+      opacity: 0;
+      transition: all 300ms var(--ease-spring);
+      white-space: nowrap;
+      pointer-events: none;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    /* ── SCROLLBAR ──────────────────────────────────────────────────────── */
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+    /* ── ANIMATIONS ─────────────────────────────────────────────────────── */
+    @keyframes pulse-glow {
+      0%, 100% { box-shadow: 0 0 20px rgba(0,212,255,0.2); }
+      50% { box-shadow: 0 0 35px rgba(0,212,255,0.45); }
+    }
+
+    .pulse { animation: pulse-glow 2s ease-in-out infinite; }
+
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .fade-in { animation: fadeInUp 400ms var(--ease-out) both; }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+    }
+  </style>
+</head>
+<body>
+
+<div id="app">
+  <!-- HEADER -->
+  <header class="header">
+    <div class="header-logo">
+      <div class="logo-icon">🧠</div>
+      <div class="logo-text">AV<span>S</span></div>
+    </div>
+    <div class="streak-badge" id="streakBadge">🔥 <span id="streakCount">0</span> Tage</div>
+  </header>
+
+  <!-- NAV TABS -->
+  <nav class="nav-tabs">
+    <button class="nav-tab active" onclick="showScreen('today')" id="tab-today">
+      <span class="tab-icon">⚡</span>Heute
+    </button>
+    <button class="nav-tab" onclick="showScreen('cards')" id="tab-cards">
+      <span class="tab-icon">📚</span>Karten
+    </button>
+    <button class="nav-tab" onclick="showScreen('progress')" id="tab-progress">
+      <span class="tab-icon">📊</span>Fortschritt
+    </button>
+    <button class="nav-tab" onclick="showScreen('tips')" id="tab-tips">
+      <span class="tab-icon">💡</span>Tipps
+    </button>
+  </nav>
+
+  <!-- SCREENS -->
+  <div class="screens">
+
+    <!-- ── SCREEN: HEUTE ────────────────────────────────────────────── -->
+    <div class="screen active" id="screen-today">
+      <div class="today-header fade-in">
+        <div class="today-greeting" id="todayGreeting">// Guten Morgen</div>
+        <div class="today-title">Frage des <span>Tages</span></div>
+        <div class="day-counter">
+          📅 Tag <strong id="dayNumber">1</strong> von 40 · IHK AP1
+        </div>
+      </div>
+
+      <!-- Install Banner (shown if installable) -->
+      <div class="install-banner" id="installBanner" style="display:none">
+        <span style="font-size:24px">📱</span>
+        <div class="install-banner-text">
+          <strong>App installieren</strong>
+          Zum Homescreen hinzufügen für Offline-Zugriff
+        </div>
+        <button class="install-btn" onclick="installPWA()">Installieren</button>
+      </div>
+
+      <!-- Tagesfrage -->
+      <div class="question-card pulse fade-in" id="todayCard">
+        <div class="question-meta" id="todayMeta"></div>
+        <div class="question-text" id="todayQuestion"></div>
+        <div class="hint-box" id="todayHint">
+          <span class="hint-icon">💡</span>
+          <span id="todayHintText"></span>
+        </div>
+
+        <button class="btn btn-primary" id="revealBtn" onclick="revealAnswer()">
+          🔍 Antwort aufdecken
+        </button>
+
+        <div class="answer-section" id="answerSection">
+          <div style="height:16px"></div>
+          <div class="answer-short">
+            <div class="answer-short-label">✓ Kurzantwort</div>
+            <div class="answer-short-text" id="shortAnswer"></div>
+          </div>
+          <div class="answer-long">
+            <div class="answer-long-label">// Ausführliche Erklärung</div>
+            <div class="answer-long-text" id="longAnswer"></div>
+          </div>
+          <div class="btn-row">
+            <button class="btn btn-success" onclick="markAnswer('correct')">✓ Gewusst</button>
+            <button class="btn btn-danger" onclick="markAnswer('wrong')">✗ Nicht gewusst</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Nächste Frage Button (nach Bewertung) -->
+      <div id="nextSection" style="display:none">
+        <button class="btn btn-ghost" onclick="loadRandomQuestion()">
+          → Weitere Frage üben
+        </button>
+      </div>
+
+      <!-- Heutige Stats -->
+      <div class="section-title">Heutiger Stand</div>
+      <div class="stats-grid">
+        <div class="stat-item">
+          <div class="stat-value" id="statAnswered">0</div>
+          <div class="stat-label">Beantwortet</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value" id="statCorrect" style="color:var(--green)">0</div>
+          <div class="stat-label">Gewusst</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value" id="statRemaining">40</div>
+          <div class="stat-label">Verbleibend</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── SCREEN: KARTEN ───────────────────────────────────────────── -->
+    <div class="screen" id="screen-cards">
+      <div class="section-title" style="margin-top:8px">Alle 40 Fragen</div>
+
+      <div class="category-filter" id="categoryFilter">
+        <button class="filter-chip active" onclick="filterCategory('all', this)">Alle (40)</button>
+        <button class="filter-chip" onclick="filterCategory('Hardware', this)">Hardware (20)</button>
+        <button class="filter-chip" onclick="filterCategory('Bewertungsaspekte', this)">Bewertung (11)</button>
+        <button class="filter-chip" onclick="filterCategory('Netzwerk', this)">Netzwerk (4)</button>
+        <button class="filter-chip" onclick="filterCategory('IT-Sicherheit', this)">IT-Sicherheit (3)</button>
+        <button class="filter-chip" onclick="filterCategory('Projektmanagement', this)">PM (2)</button>
+      </div>
+
+      <div id="questionList"></div>
+    </div>
+
+    <!-- ── SCREEN: FORTSCHRITT ──────────────────────────────────────── -->
+    <div class="screen" id="screen-progress">
+      <div class="section-title" style="margin-top:8px">Gesamtfortschritt</div>
+
+      <div class="card">
+        <div class="progress-ring-container">
+          <div class="progress-ring">
+            <svg width="120" height="120" viewBox="0 0 120 120">
+              <defs>
+                <linearGradient id="progressGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" style="stop-color:#00d4ff"/>
+                  <stop offset="100%" style="stop-color:#0066ff"/>
+                </linearGradient>
+              </defs>
+              <circle class="progress-ring-bg" cx="60" cy="60" r="50"/>
+              <circle class="progress-ring-fill" cx="60" cy="60" r="50"
+                stroke-dasharray="314"
+                stroke-dashoffset="314"
+                id="progressCircle"/>
+            </svg>
+            <div class="progress-ring-text">
+              <div class="progress-pct" id="progressPct">0%</div>
+              <div class="progress-label">Abgeschlossen</div>
+            </div>
+          </div>
+          <div class="stats-grid" style="width:100%">
+            <div class="stat-item">
+              <div class="stat-value" id="p-answered">0</div>
+              <div class="stat-label">Beantwortet</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-value" style="color:var(--green)" id="p-correct">0</div>
+              <div class="stat-label">Gewusst</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-value" style="color:var(--red)" id="p-wrong">0</div>
+              <div class="stat-label">Wiederholen</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-title">Nach Kategorie</div>
+      <div class="card" id="categoryProgress"></div>
+
+      <div class="section-title">Aktionen</div>
+      <button class="btn btn-ghost" onclick="resetProgress()" style="margin-bottom:10px">
+        🔄 Fortschritt zurücksetzen
+      </button>
+      <button class="btn btn-ghost" onclick="reviewWrong()">
+        📖 Falsche Antworten wiederholen
+      </button>
+    </div>
+
+    <!-- ── SCREEN: TIPPS ────────────────────────────────────────────── -->
+    <div class="screen" id="screen-tips">
+      <div class="section-title" style="margin-top:8px">Lernmethoden</div>
+
+      <div class="tip-card">
+        <div class="tip-icon">🔁</div>
+        <div class="tip-content">
+          <div class="tip-title">Spaced Repetition</div>
+          <div class="tip-text">Wiederhole Karten in wachsenden Abständen: 1 Tag → 3 Tage → 7 Tage → 21 Tage. Dein Gehirn festigt Wissen genau dann, wenn es fast vergessen ist.</div>
+        </div>
+      </div>
+
+      <div class="tip-card">
+        <div class="tip-icon">✍️</div>
+        <div class="tip-content">
+          <div class="tip-title">Active Recall</div>
+          <div class="tip-text">Versuche die Antwort IMMER erst selbst zu formulieren, bevor du sie aufdeckst. Dieser Abruf-Versuch stärkt die Gedächtnisspur 3× stärker als nochmaliges Lesen.</div>
+        </div>
+      </div>
+
+      <div class="tip-card">
+        <div class="tip-icon">🤔</div>
+        <div class="tip-content">
+          <div class="tip-title">Elaborative Interrogation</div>
+          <div class="tip-text">Frage dich immer: "Warum ist das so?" Erkläre Konzepte in eigenen Worten. Nutze den Claude-Prompt: "Erkläre mir X wie einem 10-Jährigen."</div>
+        </div>
+      </div>
+
+      <div class="tip-card">
+        <div class="tip-icon">⏰</div>
+        <div class="tip-content">
+          <div class="tip-title">15-Minuten-Regel</div>
+          <div class="tip-text">Lerne täglich 15 Minuten statt einmal 3 Stunden. Konsistenz schlägt Intensität. Nutze diese App morgens beim Frühstück oder in der Bahn.</div>
+        </div>
+      </div>
+
+      <div class="section-title">Das AVS-System</div>
+
+      <div class="tip-card">
+        <div class="tip-icon" style="background:rgba(0,212,255,0.1)">📓</div>
+        <div class="tip-content">
+          <div class="tip-title">Obsidian – Dein Wissensnetz</div>
+          <div class="tip-text">Schreibe Unterrichtsnotizen in Obsidian. Verknüpfe Konzepte mit [[Links]]. Der Graph View zeigt dir, welche Themen zusammenhängen.</div>
+        </div>
+      </div>
+
+      <div class="tip-card">
+        <div class="tip-icon" style="background:rgba(0,255,136,0.1)">🤖</div>
+        <div class="tip-content">
+          <div class="tip-title">Claude – Dein KI-Tutor</div>
+          <div class="tip-text">Füge deine Notizen in Claude ein und nutze den Prompt: "Analysiere meine Notizen, finde Lücken und erstelle 5 IHK-Prüfungsfragen." Täglich 5 Minuten.</div>
+        </div>
+      </div>
+
+      <div class="tip-card">
+        <div class="tip-icon" style="background:rgba(255,184,0,0.1)">🎧</div>
+        <div class="tip-content">
+          <div class="tip-title">NotebookLM – Freitag-Ritual</div>
+          <div class="tip-text">Jeden Freitag: Lade deine Wochennotizen in NotebookLM hoch. Generiere einen Audio-Podcast. Höre ihn am Wochenende beim Sport oder Spaziergang.</div>
+        </div>
+      </div>
+
+      <div class="section-title">IHK AP1 Häufigkeitsanalyse</div>
+      <div class="card">
+        <div style="font-size:12px;color:var(--text-muted);margin-bottom:12px">Basierend auf den letzten 10 Prüfungen</div>
+        <div id="frequencyChart"></div>
+      </div>
+    </div>
+
+  </div><!-- /screens -->
+</div><!-- /app -->
+
+<!-- MODAL für Kartendetail -->
+<div class="modal-overlay" id="cardModal" onclick="closeModal(event)">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div id="modalContent"></div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- DATA -->
+<script src="data/questions.js"></script>
+
+<script>
+// ── STATE ──────────────────────────────────────────────────────────────────
+let state = {
+  currentQuestion: null,
+  answered: JSON.parse(localStorage.getItem('avs_answered') || '{}'),
+  streak: parseInt(localStorage.getItem('avs_streak') || '0'),
+  lastVisit: localStorage.getItem('avs_last_visit') || '',
+  filterCategory: 'all',
+  deferredPrompt: null
+};
+
+// ── INIT ───────────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  updateStreak();
+  loadTodayQuestion();
+  renderQuestionList();
+  updateStats();
+  renderCategoryProgress();
+  renderFrequencyChart();
+  setGreeting();
+  registerSW();
+});
+
+// ── SERVICE WORKER ─────────────────────────────────────────────────────────
+function registerSW() {
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js').catch(() => {});
+  }
+}
+
+// ── PWA INSTALL ────────────────────────────────────────────────────────────
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  state.deferredPrompt = e;
+  document.getElementById('installBanner').style.display = 'flex';
+});
+
+function installPWA() {
+  if (state.deferredPrompt) {
+    state.deferredPrompt.prompt();
+    state.deferredPrompt.userChoice.then(() => {
+      state.deferredPrompt = null;
+      document.getElementById('installBanner').style.display = 'none';
+    });
+  }
+}
+
+// ── STREAK ─────────────────────────────────────────────────────────────────
+function updateStreak() {
+  const today = new Date().toDateString();
+  const yesterday = new Date(Date.now() - 86400000).toDateString();
+
+  if (state.lastVisit === today) {
+    // already counted
+  } else if (state.lastVisit === yesterday) {
+    state.streak++;
+  } else if (state.lastVisit !== today) {
+    state.streak = 1;
+  }
+
+  state.lastVisit = today;
+  localStorage.setItem('avs_streak', state.streak);
+  localStorage.setItem('avs_last_visit', today);
+  document.getElementById('streakCount').textContent = state.streak;
+}
+
+// ── GREETING ───────────────────────────────────────────────────────────────
+function setGreeting() {
+  const h = new Date().getHours();
+  const greetings = {
+    morning: '// Guten Morgen – Zeit für deine Frage',
+    afternoon: '// Guten Nachmittag – kurze Lernpause?',
+    evening: '// Guten Abend – Tagesabschluss-Review',
+    night: '// Noch wach? Letzte Frage des Tages'
+  };
+  const g = h < 12 ? greetings.morning : h < 17 ? greetings.afternoon : h < 21 ? greetings.evening : greetings.night;
+  document.getElementById('todayGreeting').textContent = g;
+
+  const dayOfYear = Math.floor((Date.now() - new Date(new Date().getFullYear(), 0, 0)) / 86400000);
+  document.getElementById('dayNumber').textContent = (dayOfYear % 40) + 1;
+}
+
+// ── LOAD TODAY QUESTION ────────────────────────────────────────────────────
+function loadTodayQuestion() {
+  const q = getQuestionOfTheDay();
+  state.currentQuestion = q;
+  renderQuestion(q);
+}
+
+function loadRandomQuestion() {
+  const wrong = Object.entries(state.answered)
+    .filter(([,v]) => v === 'wrong')
+    .map(([k]) => parseInt(k));
+
+  let q;
+  if (wrong.length > 0) {
+    const id = wrong[Math.floor(Math.random() * wrong.length)];
+    q = AVS_QUESTIONS.find(x => x.id === id);
+  } else {
+    q = getRandomQuestion(state.currentQuestion?.id);
+  }
+
+  state.currentQuestion = q;
+  renderQuestion(q);
+
+  document.getElementById('answerSection').classList.remove('revealed');
+  document.getElementById('revealBtn').style.display = 'flex';
+  document.getElementById('nextSection').style.display = 'none';
+
+  document.getElementById('todayCard').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function renderQuestion(q) {
+  const diffClass = `tag-difficulty-${q.difficulty}`;
+  document.getElementById('todayMeta').innerHTML = `
+    <span class="tag tag-category">${q.category}</span>
+    <span class="tag ${diffClass}">${q.difficulty}</span>
+    <span class="tag" style="background:var(--bg-surface);color:var(--text-muted);border:1px solid var(--border)">${q.topic}</span>
+  `;
+  document.getElementById('todayQuestion').textContent = q.question;
+  document.getElementById('todayHintText').textContent = q.hint;
+  document.getElementById('shortAnswer').textContent = q.shortAnswer;
+  document.getElementById('longAnswer').textContent = q.longAnswer;
+
+  // Reset state
+  document.getElementById('answerSection').classList.remove('revealed');
+  document.getElementById('revealBtn').style.display = 'flex';
+  document.getElementById('revealBtn').textContent = '🔍 Antwort aufdecken';
+  document.getElementById('nextSection').style.display = 'none';
+}
+
+// ── REVEAL ANSWER ──────────────────────────────────────────────────────────
+function revealAnswer() {
+  document.getElementById('answerSection').classList.add('revealed');
+  document.getElementById('revealBtn').style.display = 'none';
+}
+
+// ── MARK ANSWER ────────────────────────────────────────────────────────────
+function markAnswer(result) {
+  const id = state.currentQuestion.id;
+  state.answered[id] = result;
+  localStorage.setItem('avs_answered', JSON.stringify(state.answered));
+
+  const msg = result === 'correct' ? '✓ Super! Weiter so!' : '📖 Notiert – bald wieder dran!';
+  showToast(msg);
+
+  document.getElementById('nextSection').style.display = 'block';
+  updateStats();
+  renderCategoryProgress();
+  renderQuestionList();
+}
+
+// ── STATS ──────────────────────────────────────────────────────────────────
+function updateStats() {
+  const total = AVS_QUESTIONS.length;
+  const answered = Object.keys(state.answered).length;
+  const correct = Object.values(state.answered).filter(v => v === 'correct').length;
+  const wrong = answered - correct;
+
+  document.getElementById('statAnswered').textContent = answered;
+  document.getElementById('statCorrect').textContent = correct;
+  document.getElementById('statRemaining').textContent = total - answered;
+
+  document.getElementById('p-answered').textContent = answered;
+  document.getElementById('p-correct').textContent = correct;
+  document.getElementById('p-wrong').textContent = wrong;
+
+  const pct = Math.round((answered / total) * 100);
+  document.getElementById('progressPct').textContent = pct + '%';
+
+  const circumference = 314;
+  const offset = circumference - (pct / 100) * circumference;
+  document.getElementById('progressCircle').style.strokeDashoffset = offset;
+}
+
+// ── CATEGORY PROGRESS ──────────────────────────────────────────────────────
+function renderCategoryProgress() {
+  const categories = {
+    'Hardware': AVS_QUESTIONS.filter(q => q.category === 'Hardware'),
+    'Bewertungsaspekte': AVS_QUESTIONS.filter(q => q.category === 'Bewertungsaspekte'),
+    'Netzwerk': AVS_QUESTIONS.filter(q => q.tags.some(t => t === '#Netzwerk')),
+    'IT-Sicherheit': AVS_QUESTIONS.filter(q => q.tags.some(t => t === '#IT-Sicherheit')),
+    'Projektmanagement': AVS_QUESTIONS.filter(q => q.tags.some(t => t === '#Projektmanagement')),
+    'Cloud': AVS_QUESTIONS.filter(q => q.tags.some(t => t === '#Cloud')),
+    'Datenbank': AVS_QUESTIONS.filter(q => q.tags.some(t => t === '#Datenbank')),
+  };
+
+  const container = document.getElementById('categoryProgress');
+  container.innerHTML = Object.entries(categories).map(([name, qs]) => {
+    const answered = qs.filter(q => state.answered[q.id]).length;
+    const pct = qs.length > 0 ? Math.round((answered / qs.length) * 100) : 0;
+    return `
+      <div class="category-progress-item">
+        <div class="cpi-name">${name}</div>
+        <div class="cpi-bar"><div class="cpi-bar-fill" style="width:${pct}%"></div></div>
+        <div class="cpi-count">${answered}/${qs.length}</div>
+      </div>
+    `;
+  }).join('');
+}
+
+// ── QUESTION LIST ──────────────────────────────────────────────────────────
+function renderQuestionList(category = 'all') {
+  const questions = category === 'all'
+    ? AVS_QUESTIONS
+    : AVS_QUESTIONS.filter(q => {
+        if (category === 'Hardware') return q.category === 'Hardware';
+        if (category === 'Bewertungsaspekte') return q.category === 'Bewertungsaspekte';
+        return q.tags.some(t => t === '#' + category);
+      });
+
+  const container = document.getElementById('questionList');
+  container.innerHTML = questions.map(q => {
+    const status = state.answered[q.id];
+    const icon = status === 'correct' ? '✓' : status === 'wrong' ? '✗' : '○';
+    const statusClass = status || 'unseen';
+    return `
+      <div class="question-list-item" onclick="openCardModal(${q.id})">
+        <div class="qli-status ${statusClass}">${icon}</div>
+        <div class="qli-content">
+          <div class="qli-topic">${q.topic}</div>
+          <div class="qli-question">${q.question}</div>
+        </div>
+        <span class="tag tag-difficulty-${q.difficulty}" style="align-self:flex-start;flex-shrink:0">${q.difficulty}</span>
+      </div>
+    `;
+  }).join('');
+}
+
+function filterCategory(category, btn) {
+  state.filterCategory = category;
+  document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+  btn.classList.add('active');
+  renderQuestionList(category);
+}
+
+// ── CARD MODAL ─────────────────────────────────────────────────────────────
+function openCardModal(id) {
+  const q = AVS_QUESTIONS.find(x => x.id === id);
+  if (!q) return;
+
+  state.currentQuestion = q;
+
+  document.getElementById('modalContent').innerHTML = `
+    <div class="question-meta" style="margin-bottom:12px">
+      <span class="tag tag-category">${q.category}</span>
+      <span class="tag tag-difficulty-${q.difficulty}">${q.difficulty}</span>
+    </div>
+    <div style="font-size:15px;font-weight:600;color:var(--text-primary);line-height:1.6;margin-bottom:16px">${q.question}</div>
+    <div class="hint-box" style="margin-bottom:16px">
+      <span class="hint-icon">💡</span><span>${q.hint}</span>
+    </div>
+    <div class="answer-short" style="margin-bottom:12px">
+      <div class="answer-short-label">✓ Kurzantwort</div>
+      <div class="answer-short-text">${q.shortAnswer}</div>
+    </div>
+    <div class="answer-long" style="margin-bottom:16px">
+      <div class="answer-long-label">// Ausführliche Erklärung</div>
+      <div class="answer-long-text">${q.longAnswer}</div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-success" onclick="markFromModal(${q.id},'correct')">✓ Gewusst</button>
+      <button class="btn btn-danger" onclick="markFromModal(${q.id},'wrong')">✗ Wiederholen</button>
+    </div>
+  `;
+
+  document.getElementById('cardModal').classList.add('open');
+}
+
+function markFromModal(id, result) {
+  state.answered[id] = result;
+  localStorage.setItem('avs_answered', JSON.stringify(state.answered));
+  showToast(result === 'correct' ? '✓ Gewusst!' : '📖 Zum Wiederholen markiert');
+  closeModal();
+  updateStats();
+  renderCategoryProgress();
+  renderQuestionList(state.filterCategory);
+}
+
+function closeModal(e) {
+  if (!e || e.target === document.getElementById('cardModal')) {
+    document.getElementById('cardModal').classList.remove('open');
+  }
+}
+
+// ── REVIEW WRONG ──────────────────────────────────────────────────────────
+function reviewWrong() {
+  const wrong = Object.entries(state.answered)
+    .filter(([,v]) => v === 'wrong')
+    .map(([k]) => parseInt(k));
+
+  if (wrong.length === 0) {
+    showToast('🎉 Keine falschen Antworten – alles gewusst!');
+    return;
+  }
+
+  showScreen('today');
+  const id = wrong[Math.floor(Math.random() * wrong.length)];
+  const q = AVS_QUESTIONS.find(x => x.id === id);
+  state.currentQuestion = q;
+  renderQuestion(q);
+  showToast(`📖 ${wrong.length} Karten zum Wiederholen`);
+}
+
+// ── RESET PROGRESS ─────────────────────────────────────────────────────────
+function resetProgress() {
+  if (confirm('Fortschritt wirklich zurücksetzen?')) {
+    state.answered = {};
+    localStorage.removeItem('avs_answered');
+    updateStats();
+    renderCategoryProgress();
+    renderQuestionList(state.filterCategory);
+    showToast('🔄 Fortschritt zurückgesetzt');
+  }
+}
+
+// ── FREQUENCY CHART ────────────────────────────────────────────────────────
+function renderFrequencyChart() {
+  const data = [
+    { topic: 'Hardware', pct: 100, color: '#00d4ff' },
+    { topic: 'Netzwerk', pct: 90, color: '#0088ff' },
+    { topic: 'Software', pct: 90, color: '#0066ff' },
+    { topic: 'Wirtschaftlichkeit', pct: 90, color: '#4444ff' },
+    { topic: 'IT-Sicherheit', pct: 80, color: '#6644ff' },
+    { topic: 'Projektmanagement', pct: 80, color: '#8844ff' },
+    { topic: 'Datenschutz', pct: 70, color: '#aa44ff' },
+    { topic: 'Cloud', pct: 60, color: '#cc44ff' },
+  ];
+
+  document.getElementById('frequencyChart').innerHTML = data.map(d => `
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+      <div style="width:110px;font-size:12px;color:var(--text-secondary);flex-shrink:0">${d.topic}</div>
+      <div style="flex:1;height:8px;background:var(--bg-surface);border-radius:4px;overflow:hidden">
+        <div style="width:${d.pct}%;height:100%;background:${d.color};border-radius:4px;transition:width 800ms var(--ease-out)"></div>
+      </div>
+      <div style="width:36px;text-align:right;font-size:12px;font-family:var(--font-mono);color:var(--text-muted)">${d.pct}%</div>
+    </div>
+  `).join('');
+}
+
+// ── SCREEN NAVIGATION ──────────────────────────────────────────────────────
+function showScreen(name) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('screen-' + name).classList.add('active');
+  document.getElementById('tab-' + name).classList.add('active');
+
+  if (name === 'progress') { updateStats(); renderCategoryProgress(); }
+  if (name === 'cards') { renderQuestionList(state.filterCategory); }
+}
+
+// ── TOAST ──────────────────────────────────────────────────────────────────
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+</script>
+
+</body>
+</html>
